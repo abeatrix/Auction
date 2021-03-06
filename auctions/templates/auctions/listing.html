@@ -4,7 +4,7 @@
     <div class="card align-items-center m-5 p-3">
         <h3>{{ listing.title }}</h3>
         <img src="{{listing.img}}" width="300" height="200" />
-        <h5>Highest Bid: {{ listing.currentBid }} from {{listing.winner}}</h5>
+        <h5>Highest Bid: {{ listing.currentBid }} from {{listing.bidder}}</h5>
         {% if listing.winner == request.user %}
             <p>You are the highest bidder right now</p>
         {% endif %}
@@ -15,18 +15,35 @@
 
         <small>Listed {{ listing.post_date|timesince }} ago</small>
 
-        {% if listing.owner != request.user %}
-            <form class="m-2" method="POST" action="{% url 'bid' listing.id %}">
-                <input class="form-control" name="bid" equired/>
-                <button type="submit" class="btn">Place Bid</button>
+        <form class="m-2" method="POST" action="{% url 'add' listing.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn">add to watchlist</button>
+        </form>
+
+        <form class="m-2" method="POST" action="{% url 'remove' listing.id %}">
+            {% csrf_token %}
+                <button type="submit" class="btn">remove from watchlist</button>
             </form>
-        {% endif %}
+
+            <form class="m-2" method="POST" action="{% url 'bid' listing.id %}">
+                {% csrf_token %}
+                <input class="form-control" name="bid" placeholder="{{ listing.currentBid }}+" equired/>
+                    <button type="submit" class="btn btn-primary">Place Bid</button>
+            </form>
     </div>
     <div class="card align-items-center m-5 p-3">
         <form method="POST" action="{% url 'comment' listing.id %}">
+            {% csrf_token %}
             <textarea class="form-control" minlength="2" name="comment" rows="3" required></textarea>
             <button type="submit" class="btn">Submit Comment</button>
         </form>
+        {% if errors %}
+            <div class="alert alert-danger" role="alert">{{ errors }}</div>
+        {% endif %}
+        {% for comment in comments %}
+            <p>{{comment.comment}}</p>
+            <p>Submitted by {{comment.user.username}} {{comment.comment_date|timesince}} ago</p>
+        {% endfor %}
     </div>
 
 {% endblock %}

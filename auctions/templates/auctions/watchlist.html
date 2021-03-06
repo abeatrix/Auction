@@ -1,0 +1,23 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<div class="card align-items-center m-5 p-3">
+    <h2>{{listings.count}} item(s) in your watchlist</h2>
+
+    {% for listing in listings %}
+        <a href="{% url 'listing' listing.listing.id %}">
+        <img src="{{listing.listing.img}}" width="300" height="200" />
+        <h5>{{ listing.listing.title }}</h5>
+        </a>
+        <form class="m-2" method="POST" action="{% url 'add' listing.listing.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn">add to watchlist</button>
+        </form>
+
+        <form class="m-2" method="POST" action="{% url 'remove' listing.listing.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn">remove from watchlist</button>
+        </form>
+    {% endfor %}
+</div>
+{% endblock %}
