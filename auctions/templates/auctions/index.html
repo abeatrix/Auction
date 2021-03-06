@@ -1,0 +1,15 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<div class="card align-items-center m-5 p-3">
+    <h2>{{listings.count}} Active Listings</h2>
+
+    {% for listing in listings %}
+        <a href="{% url 'listing' listing.id %}">
+        <img src="{{listing.img}}" width="300" height="200" />
+        <h5>{{ listing.title }}</h5>
+        <small>Listed {{ listing.post_date|timesince }} ago</small>
+        </a>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "auctions/layout.html" %}
+{% load crispy_forms_tags %}
+{% block body %}
+    <div class="card align-items-center m-5 p-3">
+        <h3>{{ listing.title }}</h3>
+        <img src="{{listing.img}}" width="300" height="200" />
+        <h5>Highest Bid: {{ listing.currentBid }} from {{listing.winner}}</h5>
+        {% if listing.winner == request.user %}
+            <p>You are the highest bidder right now</p>
+        {% endif %}
+        <p>Posted by: {{ listing.owner }}</p>
+        <p>Starting Bid: {{ listing.startingBid }}</p>
+        <p>Category: {{ listing.category }}</p>
+        <p>Item description: {{ listing.description }}</p>
+
+        <small>Listed {{ listing.post_date|timesince }} ago</small>
+
+        {% if listing.owner != request.user %}
+            <form class="m-2" method="POST" action="{% url 'bid' listing.id %}">
+                <input class="form-control" name="bid" equired/>
+                <button type="submit" class="btn">Place Bid</button>
+            </form>
+        {% endif %}
+    </div>
+    <div class="card align-items-center m-5 p-3">
+        <form method="POST" action="{% url 'comment' listing.id %}">
+            <textarea class="form-control" minlength="2" name="comment" rows="3" required></textarea>
+            <button type="submit" class="btn">Submit Comment</button>
+        </form>
+    </div>
+
+{% endblock %}
