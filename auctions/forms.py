@@ -1,4 +1,4 @@
-from django.forms import ModelForm
+from django.forms import ModelForm, ModelChoiceField
 from .models import Listing, Bids, Comments, Category
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -9,7 +9,7 @@ class Item_Form(ModelForm):
 
     class Meta:
         model = Listing
-        fields = ['title', 'category', 'startingBid', 'description', 'img']
+        fields = ['title', 'category', 'currentPrice', 'description', 'img']
 
 class Comment_Form(ModelForm):
         class Meta:
@@ -20,3 +20,8 @@ class Bid_Form(ModelForm):
         class Meta:
             model = Bids
             fields = ['bid']
+
+class Cat_Form(ModelForm):
+        class Meta:
+            model = Category
+            fields = ['name']

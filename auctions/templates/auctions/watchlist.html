@@ -1,23 +1,24 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-<div class="card align-items-center m-5 p-3">
+<div class="container m-5 p-3">
     <h2>{{listings.count}} item(s) in your watchlist</h2>
-
-    {% for listing in listings %}
-        <a href="{% url 'listing' listing.listing.id %}">
-        <img src="{{listing.listing.img}}" width="300" height="200" />
-        <h5>{{ listing.listing.title }}</h5>
-        </a>
-        <form class="m-2" method="POST" action="{% url 'add' listing.listing.id %}">
-            {% csrf_token %}
-            <button type="submit" class="btn">add to watchlist</button>
-        </form>
-
-        <form class="m-2" method="POST" action="{% url 'remove' listing.listing.id %}">
-            {% csrf_token %}
-            <button type="submit" class="btn">remove from watchlist</button>
-        </form>
-    {% endfor %}
+        <div class="row align-items-center">
+            {% for listing in listings %}
+                <div class="card m-2 text-center" style="width: 18rem;">
+                    <a href="{% url 'listing' listing.id %}">
+                        <img class="card-img-top" src="{{listing.listing.img}}" alt="{{ listing.listing.title }}">
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ listing.listing.title }}</h5>
+                        <form class="m-2" method="POST" action="{% url 'remove' listing.listing.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger w-100">remove</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
 </div>
+
 {% endblock %}

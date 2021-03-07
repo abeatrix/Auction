@@ -8,39 +8,45 @@
         <link href="{% static 'auctions/styles.css' %}" rel="stylesheet">
     </head>
     <body>
-        <h1>Auctions</h1>
-        <div>
-            {% if user.is_authenticated %}
-                Signed in as <strong>{{ user.username }}</strong>.
-            {% else %}
-                Not signed in.
-            {% endif %}
+        <div class="row">
+            <div class="sidebar col-lg-2 col-md-3 p-4">
+                <h1>Auctions.</h1>
+
+                <div class="p-2">
+                        <a class="nav-link" href="{% url 'index' %}">Active Listings</a>
+                </div>
+                <div class="p-2">
+                        <a class="nav-link" href="{% url 'categories' %}">Categories</a>
+                </div>
+                {% if user.is_authenticated %}
+                <div class="p-2">
+                    <a class="nav-link" href="{% url 'create' %}">Add Listing</a>
+                </div>
+                <div class="p-2">
+                    <a class="nav-link" href="{% url 'watchlist' %}">Watchlist</a>
+                </div>
+                {% endif %}
+
+                <div class="my-5">
+                    {% if user.is_authenticated %}
+                        Signed in as <strong>{{ user.username }}</strong>.
+                        <div class="p-2">
+                        <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
+                    </div>
+                    {% else %}
+                        <a class="btn btn-primary w-100 p-2 my-2" href="{% url 'login' %}">Log In</a>
+                        <a class="btn btn-primary w-100 p-2 my-2" href="{% url 'register' %}">Register</a>
+                    {% endif %}
+                </div>
+
+
+                {% block nav %}
+                {% endblock %}
+            </div>
+            <div class="main col-lg-10 col-md-9">
+                {% block body %}
+                {% endblock %}
+            </div>
         </div>
-        <ul class="nav">
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'index' %}">Active Listings</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'create' %}">Add Listing</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'watchlist' %}">Watchlist</a>
-            </li>
-            {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
-                </li>
-            {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'login' %}">Log In</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'register' %}">Register</a>
-                </li>
-            {% endif %}
-        </ul>
-        <hr>
-        {% block body %}
-        {% endblock %}
     </body>
 </html>

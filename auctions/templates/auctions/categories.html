@@ -1,0 +1,29 @@
+{% extends "auctions/layout.html" %}
+{% load crispy_forms_tags %}
+{% block body %}
+<div class="container m-5 p-3">
+    <h2>Categories</h2>
+
+    <div class="my-3">
+    {% if not cats %}
+        <div class="alert alert-danger" role="alert">No listing yet.</div>
+    {% endif %}
+    {% for cat in cats %}
+        <a href="{% url 'category' cat.id %}">
+            <p>{{cat.name}}</p>
+        </a>
+    {% endfor %}
+    </div>
+
+    {% if user.is_authenticated%}
+    <form class="form-inline my-5" id="add-category" method="POST" action="{% url 'categories' %}">
+        {% csrf_token %}
+        <div class="form-group mx-sm-3 mb-2">
+            <input type="text" class="form-control" id="category-name"  name="name" placeholder="Create a new Category">
+        </div>
+        <button type="submit" form="add-category" class="btn btn-primary mb-2">Submit</button>
+    </form>
+    {% endif %}
+
+</div>
+{% endblock %}

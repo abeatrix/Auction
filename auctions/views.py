@@ -3,13 +3,14 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from .forms import Item_Form, Comment_Form, Bid_Form
+from .forms import Item_Form, Comment_Form, Bid_Form, Cat_Form
 from .models import User, Listing, Category, Bids, WatchList, Comments
 from django.contrib.auth.decorators import login_required
 
 # Index Page that display a list of Listings
 def index(request):
-    context = {"listings": Listing.objects.filter(alive=True)}
+    listings = Listing.objects.filter(alive=True)
+    context = {"listings": listings}
     return render(request, "auctions/index.html", context)
 
 
@@ -64,8 +65,10 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
+
 # Listing Page
 def listing(request, listing_id):
+    watchlist = WatchList.objects.filter(listing=listing_id).exists()
     if request.method == "POST":
         listing = Listing.objects.get(id=listing_id)
         listing.alive = False
@@ -73,11 +76,38 @@ def listing(request, listing_id):
         return redirect("/")
     try:
         listing = Listing.objects.get(id=listing_id)
+        price = listing.currentPrice+0.1
         comments = Comments.objects.filter(listing_id=listing_id)
     except Listing.DoesNotExist:
         listing = None
-    context = {'listing': listing, "comments": comments}
+    context = {'listing': listing, "comments": comments, "watchlist": watchlist, "price": price}
     return render(request, 'auctions/listing.html', context)
+
+
+# Categories Index Page
+def categories(request):
+    cats = Category.objects.all()
+    form = Cat_Form()
+    if request.method == "POST":
+        form = Cat_Form(request.POST)
+        if form.is_valid():
+            new_cat = form.save(commit=False)
+            form.save()
+            context = {"form": Item_Form()}
+            return render(request, 'auctions/create.html', context)
+    context = {"cats": cats, "form": form}
+    return render(request, "auctions/categories.html", context)
+
+
+# Category Index Page
+def category(request, cat_id):
+    cat = Category.objects.get(id=cat_id)
+    listings = Listing.objects.filter(category=cat_id, alive=True)
+    if request.method == "POST":
+        listings = Listing.objects.filter(category=cat_id)
+    context = {"cat": cat, "listings": listings}
+    return render(request, "auctions/category.html", context)
+
 
 # Create Listing
 @login_required
@@ -98,6 +128,7 @@ def create(request):
     context = {"form": form, "category": category, "listings": listing}
     return render(request, 'auctions/create.html', context)
 
+
 # Place Bid on Listing
 @login_required
 def bid(request, listing_id):
@@ -106,15 +137,13 @@ def bid(request, listing_id):
         form = Bid_Form(request.POST)
         if form.is_valid():
             price = float(request.POST['bid'])
-            current_price = listing.startingBid
-            if listing.currentBid:
-                current_price = listing.currentBid
+            current_price = listing.currentPrice
             if price > current_price:
                 highest_bid = form.save(commit=False)
                 highest_bid.bidder = request.user
                 highest_bid.listing = listing
                 highest_bid.save()
-                listing.currentBid = price
+                listing.currentPrice = price
                 listing.bidder = request.user
                 listing.save()
             return redirect("listing", listing_id)

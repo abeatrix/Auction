@@ -5,23 +5,22 @@ class User(AbstractUser):
     pass
 
 class Category(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=100, default="General")
 
     def __str__(self):
         return self.name
 
 class Listing(models.Model):
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category')
     alive = models.BooleanField(default=True)
     title = models.CharField(max_length=60)
-    description = models.TextField(max_length=1000, blank=True, null=True, default=None)
+    description = models.TextField(max_length=1000, default=None)
     owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="all_listing")
-    img = models.URLField(max_length=300)
-    startingBid = models.FloatField()
-    currentBid = models.FloatField(blank=True, null=True)
-    bidder = models.ForeignKey(User, null=True, on_delete=models.PROTECT, related_name="winner")
+    img = models.URLField(max_length=300, blank=True, null=True, default="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png")
+    currentPrice = models.FloatField()
+    bidder = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT, related_name="bidder")
     watchers = models.ManyToManyField(User, blank=True)
     post_date = models.DateTimeField(auto_now_add=True)
-    category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.CASCADE, related_name="category", default=None)
 
     def __str__(self):
         return f"{self.title} by {self.owner}"
@@ -52,4 +51,4 @@ class WatchList(models.Model):
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='watchlist')
 
     def __str__(self):
-        return f"{self.user} added {self.listing,title}"
+        return f"{self.user} added {self.listing.title}"

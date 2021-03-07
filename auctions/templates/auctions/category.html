@@ -2,11 +2,8 @@
 
 {% block body %}
 <div class="container m-5 p-3">
-    <h2>Active Listings</h2>
+    <h2>{{cat.name}}</h2>
         <div class="row align-items-center">
-            {% if not listings %}
-                <div class="alert alert-danger m-5" role="alert">No listing yet.</div>
-            {% endif %}
             {% for listing in listings %}
                 <div class="card m-2" style="width: 18rem;">
                     <a href="{% url 'listing' listing.id %}">
@@ -17,10 +14,22 @@
                         <p><strong>Price: {{ listing.currentPrice}}</strong></p>
                         <p>Description: {{listing.description}}</p>
                         <p class="card-text">Listed {{ listing.post_date|timesince }} ago</p>
-                        <a href="{% url 'listing' listing.id %}" class="btn btn-primary w-100" >More Details</a>
+                        {% if listing.alive %}
+                        <a href="{% url 'listing' listing.id %}" class="btn btn-primary w-100">More Details</a>
+                        {% else %}
+                        <button class="btn btn-danger w-100"  disabled>Listing Closed</a>
+                        {% endif %}
                     </div>
                 </div>
             {% endfor %}
         </div>
+        {% if not listings %}
+            <div class="alert alert-danger m-5" role="alert">No listing yet.</div>
+        {% else %}
+            <form class="m-2" method="POST" action="{% url 'category' cat.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger w-50">Include Closed Listings</button>
+            </form>
+        {% endif %}
 </div>
 {% endblock %}
