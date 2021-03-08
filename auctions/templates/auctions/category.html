@@ -11,7 +11,7 @@
                     </a>
                     <div class="card-body">
                         <h5 class="card-title text-center">{{ listing.title }}</h5>
-                        <p><strong>Price: {{ listing.currentPrice}}</strong></p>
+                        <p><strong>Price: {{ listing.currentPrice|floatformat:2 }}</strong></p>
                         <p>Description: {{listing.description}}</p>
                         <p class="card-text">Listed {{ listing.post_date|timesince }} ago</p>
                         {% if listing.alive %}
@@ -25,11 +25,10 @@
         </div>
         {% if not listings %}
             <div class="alert alert-danger m-5" role="alert">No listing yet.</div>
-        {% else %}
-            <form class="m-2" method="POST" action="{% url 'category' cat.id %}">
+        {% endif %}
+        <form class="m-2" method="POST" action="{% url 'category' cat.id %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger w-50">Include Closed Listings</button>
-            </form>
-        {% endif %}
+        </form>
 </div>
 {% endblock %}

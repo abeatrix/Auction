@@ -14,7 +14,7 @@
                     </a>
                     <div class="card-body">
                         <h5 class="card-title text-center">{{ listing.title }}</h5>
-                        <p><strong>Price: {{ listing.currentPrice}}</strong></p>
+                        <p><strong>Price: {{ listing.currentPrice|floatformat:2}}</strong></p>
                         <p>Description: {{listing.description}}</p>
                         <p class="card-text">Listed {{ listing.post_date|timesince }} ago</p>
                         <a href="{% url 'listing' listing.id %}" class="btn btn-primary w-100" >More Details</a>

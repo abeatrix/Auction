@@ -1,0 +1,11 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<div class="container m-5 p-3">
+    <h2>ERROR</h2>
+        {% if errors %}
+            <div class="alert alert-danger" role="alert">{{ errors }}</div>
+        {% endif %}
+</div>
+
+{% endblock %}

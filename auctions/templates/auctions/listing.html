@@ -8,31 +8,35 @@
     <div class="card align-items-center m-5 p-3 col">
         <img src="{{listing.img}}" height="300" />
         {% if listing.alive and listing.bidder == request.user %}
-            <p><strong class="text-danger">Current Price: ${{ listing.currentPrice }}</strong></p>
+            <p><strong class="text-danger">Current Price: ${{ listing.currentPrice|floatformat:2 }}</strong></p>
             <p><strong class="text-danger">You are the highest bidder right now!</strong></p>
         {% elif not listing.alive and listing.winner == request.user %}
             <strong class="text-danger">The Listing has ended! You won!</strong>
         {% elif  listing.alive%}
-            <p><strong class="text-danger">Current Price: ${{ listing.currentPrice }}</strong></p>
+            <p><strong class="text-danger">Current Price: ${{ listing.currentPrice|floatformat:2 }}</strong></p>
         {% endif %}
         <p>Category: {{ listing.category }}</p>
         <p>Item description: {{ listing.description }}</p>
         <small>Listed by {{ listing.owner }} {{ listing.post_date|timesince }} ago</small>
 
-                {% if listing.alive and listing.owner == request.user %}
+        {% if listing.alive and listing.owner == request.user %}
         <form class="m-2" method="POST" action="{% url 'listing' listing.id %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger" style="width: 18rem">Close Listing</button>
         </form>
         {% endif %}
+
     </div>
 
     <!-- -------------- Listing Actions ---------------- -->
     <div class="col align-items-center m-5 p-3">
+        {% if errors %}
+            <div class="alert alert-danger" role="alert">{{ errors }}</div>
+        {% endif %}
         {% if listing.alive and user.is_authenticated %}
             <form class="m-2" method="POST" action="{% url 'bid' listing.id %}">
                     {% csrf_token %}
-                    <input class="form-control" name="bid" type="number" step="0.1" min="{{price}}" placeholder="Bid starts at ${{price}}" required/>
+                    <input class="form-control" name="bid" type="number" step="0.1" min="{{price|floatformat:2}}" placeholder="Bid starts at ${{price|floatformat:2}}" required/>
                     <div class="text-center my-2">
                         <button type="submit" class="btn btn-primary" style="width: 18rem">Place Bid</button>
                     </div>
@@ -73,10 +77,10 @@
         {% if errors %}
             <div class="alert alert-danger" role="alert">{{ errors }}</div>
         {% endif %}
-    {% elif not user.is_authenticated%}
-    {% else %}
+        {% elif not user.is_authenticated%}
+        {% else %}
         <strong class="text-danger">Comment has been disabled for closed listing.</strong>
-    {%endif%}
+        {%endif%}
         {% for comment in comments %}
             <p>{{comment.comment}}</p>
             <p>Submitted by {{comment.user.username}} {{comment.comment_date|timesince}} ago</p>

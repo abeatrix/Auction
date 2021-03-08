@@ -7,13 +7,15 @@ from .forms import Item_Form, Comment_Form, Bid_Form, Cat_Form
 from .models import User, Listing, Category, Bids, WatchList, Comments
 from django.contrib.auth.decorators import login_required
 
-# Index Page that display a list of Listings
+
+# Index Page that displays a list of Active Listings
 def index(request):
     listings = Listing.objects.filter(alive=True)
     context = {"listings": listings}
     return render(request, "auctions/index.html", context)
 
 
+# Login
 def login_view(request):
     if request.method == "POST":
 
@@ -34,11 +36,13 @@ def login_view(request):
         return render(request, "auctions/login.html")
 
 
+# Logout
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
 
 
+# Register
 def register(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -69,17 +73,27 @@ def register(request):
 # Listing Page
 def listing(request, listing_id):
     watchlist = WatchList.objects.filter(listing=listing_id).exists()
+    # For listing owner to close the listing
     if request.method == "POST":
-        listing = Listing.objects.get(id=listing_id)
-        listing.alive = False
-        listing.save()
-        return redirect("/")
+        try:
+            listing = Listing.objects.get(id=listing_id)
+            if request.user == listing.owner:
+                listing.alive = False
+                listing.save()
+                return redirect("/")
+        # Return errors if non-listing owner requested to close the listing
+        except:
+            context = {"errors": "Unauthorized Attempt"}
+            return render(request, "auctions/listing.html", context)
+    # Display Listing with current price and bidding price that's 0.1 more than the current price
     try:
         listing = Listing.objects.get(id=listing_id)
         price = listing.currentPrice+0.1
         comments = Comments.objects.filter(listing_id=listing_id)
     except Listing.DoesNotExist:
         listing = None
+        context = {"errors": "Listing does not exist"}
+        return render(request, "auctions/listing.html", context)
     context = {'listing': listing, "comments": comments, "watchlist": watchlist, "price": price}
     return render(request, 'auctions/listing.html', context)
 
@@ -103,8 +117,12 @@ def categories(request):
 def category(request, cat_id):
     cat = Category.objects.get(id=cat_id)
     listings = Listing.objects.filter(category=cat_id, alive=True)
+    # Include Closed Listing
     if request.method == "POST":
-        listings = Listing.objects.filter(category=cat_id)
+        try:
+            listings = Listing.objects.filter(category=cat_id)
+        except Category.DoesNotExist:
+            return redirect("/")
     context = {"cat": cat, "listings": listings}
     return render(request, "auctions/category.html", context)
 
@@ -133,12 +151,22 @@ def create(request):
 @login_required
 def bid(request, listing_id):
     if request.method == "POST":
-        listing = Listing.objects.get(id=listing_id)
+        try:
+            listing = Listing.objects.get(id=listing_id)
+        except Listing.DoesNotExist:
+            context = {"errors": "Listing does not exist"}
+            return render(request, "auctions/errors.html", context)
         form = Bid_Form(request.POST)
         if form.is_valid():
             price = float(request.POST['bid'])
             current_price = listing.currentPrice
+            # only save bid if price is greater than current price. validation is also handled by front-end form
             if price > current_price:
+                try:
+                    user = User.objects.get(username=request.user)
+                except User.DoesNotExist:
+                    context = {"errors": "User does not exist"}
+                    return render(request, "auctions/listing.html", context)
                 highest_bid = form.save(commit=False)
                 highest_bid.bidder = request.user
                 highest_bid.listing = listing
@@ -148,11 +176,16 @@ def bid(request, listing_id):
                 listing.save()
             return redirect("listing", listing_id)
 
+
 # Add Comment to Listing Page
 @login_required
 def comment(request, listing_id):
     if request.method == "POST":
-        listing = Listing.objects.get(id=listing_id)
+        try:
+            listing = Listing.objects.get(id=listing_id)
+        except Listing.DoesNotExist:
+            context = {"errors": "Listing does not exist"}
+            return render(request, "auctions/errors.html", context)
         form = Comment_Form(request.POST)
         if form.is_valid():
             new_comment = form.save(commit=False)
@@ -164,28 +197,44 @@ def comment(request, listing_id):
             context = {'listing': listing, "errors": form.errors}
             return render(request, 'auctions/listing.html', context)
 
+
+# Current User's Watchlist
+@login_required
+def watchlist(request):
+    try:
+        listings = request.user.watchlist.all()
+    except Listing.DoesNotExist:
+        context = {"errors": "Listing does not exist"}
+        return render(request, "auctions/errors.html", context)
+    context = {"listings": listings}
+    return render(request, "auctions/watchlist.html", context)
+
+
 # Add Listing to Watchlist
 @login_required
 def add(request, listing_id):
-    item = Listing.objects.get(id=listing_id)
+    try:
+        item = Listing.objects.get(id=listing_id)
+    except Listing.DoesNotExist:
+        context = {"errors": "Listing does not exist"}
+        return render(request, "auctions/errors.html", context)
+
     if request.method == "POST":
         listing = WatchList(user=request.user, listing=item)
         listing.save()
         return redirect("listing", listing_id=listing_id)
 
+
 # Remove Listing from Watchlist
 @login_required
 def remove(request, listing_id):
-    item = Listing.objects.get(id=listing_id)
+    try:
+        item = Listing.objects.get(id=listing_id)
+    except Listing.DoesNotExist:
+        context = {"errors": "Listing does not exist"}
+        return render(request, "auctions/errors.html", context)
+
     if request.method == "POST":
         listing = request.user.watchlist.get(listing=item)
         listing.delete()
         return redirect("listing", listing_id=listing_id)
-
-# Current User's Watchlist
-@login_required
-def watchlist(request):
-    listings = request.user.watchlist.all()
-
-    context = {"listings": listings}
-    return render(request, "auctions/watchlist.html", context)
