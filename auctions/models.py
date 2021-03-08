@@ -8,7 +8,7 @@ class User(AbstractUser):
 
 # Model for Category. A new Category needs to be created by user to show up on the Category page.
 class Category(models.Model):
-    name = models.CharField(max_length=100, default="General")
+    name = models.CharField(max_length=100, default="None")
 
     def __str__(self):
         return self.name
@@ -16,7 +16,7 @@ class Category(models.Model):
 
 # Model for Auction Listing
 class Listing(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True, related_name='category', default=None)
     alive = models.BooleanField(default=True)
     title = models.CharField(max_length=60)
     description = models.TextField(max_length=1000, default=None)

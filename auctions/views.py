@@ -73,6 +73,7 @@ def register(request):
 # Listing Page
 def listing(request, listing_id):
     watchlist = WatchList.objects.filter(listing=listing_id).exists()
+
     # For listing owner to close the listing
     if request.method == "POST":
         try:
@@ -81,10 +82,10 @@ def listing(request, listing_id):
                 listing.alive = False
                 listing.save()
                 return redirect("/")
-        # Return errors if non-listing owner requested to close the listing
         except:
             context = {"errors": "Unauthorized Attempt"}
             return render(request, "auctions/listing.html", context)
+
     # Display Listing with current price and bidding price that's 0.1 more than the current price
     try:
         listing = Listing.objects.get(id=listing_id)
@@ -131,7 +132,6 @@ def category(request, cat_id):
 @login_required
 def create(request):
     form = Item_Form()
-    category = Category.objects.all()
     if request.method == "POST":
         form = Item_Form(request.POST)
         if form.is_valid():
@@ -140,10 +140,10 @@ def create(request):
             new_item.save()
             return redirect("listing", listing_id=new_item.id)
         else:
-            context = {"form": form, "category": category, "listings": listing, 'errors': form.errors}
+            context = {"form": form, "listings": listing, 'errors': form.errors}
             return render(request, 'auctions/create.html', context)
     listings = Listing.objects.filter(owner=request.user)
-    context = {"form": form, "category": category, "listings": listing}
+    context = {"form": form, "listings": listing}
     return render(request, 'auctions/create.html', context)
 
 
